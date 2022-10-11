@@ -1,0 +1,76 @@
+# define a query template with 2 optional parameters, 0 - 2 could be passed for filtering
+# {{#state_p}} {{/state_p}} indicates optional parameter's present
+# match_all is here to make json valid, it is like 1=1 in sql to make where clause valid in AND condition.
+# depends on situation, match_none could be used, sql equivalent of 1=1, in OR condition 
+
+PUT _scripts/dynamic-parm-template
+{
+  "script": {
+    "lang": "mustache",
+    "source": """{
+      "query": {
+        "bool": {
+          "filter": [
+            {{#state_p}} {"term": {"state": "{{state_p}}"}}, {{/state_p}}
+            {{#zip_p}} {"term": {"zip": "{{zip_p}}"}}, {{/zip_p}}
+            { "match_all": {}}
+            ]
+        }
+      }
+    },
+    "params": {
+      "state_p": "tx",
+      "zip_p": "75205"
+    }
+    """
+  }
+}
+# response
+{
+  "acknowledged": true
+}
+
+# validate template
+
+POST _render/template
+{
+  "id": "dynamic-parm-template",
+  "params": {
+    "state_p": "tx",
+    "zip_p": "75204"
+  }
+}
+# response, shows what query looks like after parameter applied
+{
+  "template_output": {
+    "query": {
+      "bool": {
+        "filter": [
+          {
+            "term": {
+              "state": "tx"
+            }
+          },
+          {
+            "term": {
+              "zip": "75204"
+            }
+          },
+          {
+            "match_all": {}
+          }
+        ]
+      }
+    }
+  }
+}
+
+# actual query against ix_state_zip index
+GET ix_state_zip/_search/template
+{
+  "id": "dynamic-parm-template",
+  "params": {
+    "state_p": "tx",
+    "zip_p": "75205"
+  }
+}
