@@ -1,0 +1,9 @@
+kibana
+get _cluster/health
+get _cluster/stats
+
+python
+from elasticsearch import Elasticsearch
+client = Elasticsearch([{"host", es_url, "port", es_port}])
+health = client.cluster.health()
+stats = client.cluster.stats()
