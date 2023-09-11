@@ -1,1 +1,22 @@
-
+get alias_es_index/_search
+{
+  "size": 0,
+  "_source": ["id", "name"],
+  "aggs": {
+    "group_by_id": {
+      "terms": {
+        "field": "id"
+      },
+      "aggs": {
+        "having_count_filter": {
+          "bucket_selector": {
+            "buckets_path": {
+              "the_doc_count": "_count"
+            },
+            "script": "params.the_doc_count > 1"
+          }
+        }
+      }
+    }
+  }
+}
